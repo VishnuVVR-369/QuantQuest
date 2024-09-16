@@ -1,28 +1,8 @@
-require("dotenv").config();
-const { S3Client, ListObjectsV2Command } = require("@aws-sdk/client-s3");
-const fs = require("fs");
-const s3client = new S3Client({ region: process.env.AWS_REGION });
+const FyersAPI = require("fyers-api-v3").fyersModel
+var fyers = new FyersAPI();
+fyers.setAppId(process.env.FYERS_APP_ID);
 
-const listObjects = async (params) => {
-  try {
-    const data = await s3client.send(new ListObjectsV2Command(params));
-    return data;
-  } catch (err) {
-    console.error(err);
-  }
-};
+fyers.setRedirectUrl(`https://127.0.0.1:5000/`);
+var generateAuthcodeURL = fyers.generateAuthCode();
 
-const main = async () => {
-  const list = await listObjects({
-    Bucket: process.env.AWS_BUCKET_NAME,
-  });
-  const stocksMetaData = fs.readFileSync("equity.json", "utf8");
-  const stocksInJson = Object.keys(JSON.parse(stocksMetaData));
-  const stocksInS3 = list.Contents.map((stock) => stock.Key);
-  const missingStocks = stocksInJson.filter(
-    (stock) => !stocksInS3.includes(stock)
-  );
-  console.log(missingStocks);
-};
-
-main();
+console.log(generateAuthcodeURL)
